@@ -71,7 +71,10 @@ jobs:
     - name: Create temporary directory
       run: |
         mkdir temp-repo
-        cp -r ./* temp-repo/
+
+    - name: Copy files to temporary directory
+      run: |
+        rsync -av --exclude='temp-repo' ./ temp-repo/
 
     - name: Archive repository
       run: |

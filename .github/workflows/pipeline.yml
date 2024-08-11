@@ -1,0 +1,56 @@
+name: Check DynamoDB Table
+
+on:
+  push:
+    branches:
+      - main  # Adjust this to your target branch
+
+jobs:
+  check-table:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # Update with your desired region
+
+    - name: Check if DynamoDB table exists
+      run: |
+        TABLE_NAME="WeatherDataThree"
+        PRIMARY_KEY="Id"
+        TABLE_EXISTS=$(aws dynamodb list-tables --query "TableNames[?TableName=='$TABLE_NAME']" --output text)
+        if [ -z "$TABLE_EXISTS" ]; then
+          echo "Table does not exist. Creating table..."
+          aws dynamodb create-table \
+            --table-name $TABLE_NAME \
+            --key-schema \
+              AttributeName=$PRIMARY_KEY,KeyType=HASH \
+            --attribute-definitions \
+              AttributeName=$PRIMARY_KEY,AttributeType=S \
+            --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+        else
+          echo "Table already exists."
+        fi
+
+      #  - |
+      # echo "Inserting items..."
+      # aws dynamodb put-item \
+      #   --table-name $TABLE_NAME \
+      #   --item \
+      #     '{"id": {"S": "123"}, "city": {"S": "New York"}, "temp": {"N": "75"}}' \
+      #   --region $AWS_REGION
+      
+      # aws dynamodb put-item \
+      #   --table-name $TABLE_NAME \
+      #   --item \
+      #     '{"id": {"S": "456"}, "city": {"S": "Los Angeles"}, "temp": {"N": "85"}}' \
+      #   --region $AWS_REGION
+
+
+       

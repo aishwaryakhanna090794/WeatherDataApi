@@ -1,4 +1,4 @@
-name: Check DynamoDB Table
+name: Check DynamoDB table
 
 on:
   push:

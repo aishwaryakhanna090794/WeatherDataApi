@@ -18,15 +18,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Archive repository
-      run: |
-        tar -czf repository.tar.gz .
-
-    - name: Upload repository to S3
-      run: |
-        BUCKET_NAME="weather-data-api"
-        aws s3 cp repository.tar.gz s3://$BUCKET_NAME/repository.tar.gz
-
     - name: Create S3 bucket
       run: |
         BUCKET_NAME="weather-data-api"

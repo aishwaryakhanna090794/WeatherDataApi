@@ -34,8 +34,10 @@ jobs:
             --attribute-definitions \
               AttributeName=$PRIMARY_KEY,AttributeType=S \
             --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-        else
-          echo "Table already exists."
+        # else
+        #   echo "Table already exists."
+    
+    
     - name: Create S3 bucket
       run: |
         BUCKET_NAME="weather-data-api" # Replace with your desired bucket name

@@ -22,7 +22,7 @@ jobs:
 
     - name: Check if DynamoDB table exists
       run: |
-        TABLE_NAME="WeatherDataThree"
+        TABLE_NAME="WeatherData"
         PRIMARY_KEY="Id"
         TABLE_EXISTS=$(aws dynamodb list-tables --query "TableNames[?TableName=='$TABLE_NAME']" --output text)
         if [ -z "$TABLE_EXISTS" ]; then

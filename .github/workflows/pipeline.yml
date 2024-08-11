@@ -78,13 +78,13 @@ jobs:
 
     - name: Archive repository
       run: |
-        ARCHIVE_NAME="repository-$(date +%Y%m%d%H%M%S).tar.gz"
+        ARCHIVE_NAME="repository-$(date).tar.gz"
         tar -czf $ARCHIVE_NAME -C temp-repo .
 
     - name: Upload repository to S3
       run: |
         BUCKET_NAME="weather-data-api"
-        ARCHIVE_NAME="repository-$(date +%Y%m%d%H%M%S).tar.gz"
+        ARCHIVE_NAME="repository-$(date).tar.gz"
         echo "Uploading $ARCHIVE_NAME to s3://$BUCKET_NAME/"
         aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME
         echo "Upload complete."

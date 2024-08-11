@@ -37,20 +37,17 @@ jobs:
         else
           echo "Table already exists."
         fi
-
-      - name: Create S3 bucket
-        run: |
-          BUCKET_NAME="weather-data-api" # Replace with your desired bucket name
-          REGION="us-east-1"            # Replace with your desired AWS region
-  
-          # Create the bucket
-          aws s3api create-bucket \
-            --bucket $BUCKET_NAME \
-            --region $REGION \
-            --create-bucket-configuration LocationConstraint=$REGION
-  
-          # Optionally: Confirm bucket creation
-          aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION
+        - name: Create S3 bucket
+          run: |
+            BUCKET_NAME="weather-data-api"
+            REGION="us-east-1"
+            aws s3api create-bucket \
+              --bucket $BUCKET_NAME \
+              --region $REGION \
+              --create-bucket-configuration LocationConstraint=$REGION
+    
+            # Optionally: Confirm bucket creation
+            aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION
 
       #  - |
       # echo "Inserting items..."

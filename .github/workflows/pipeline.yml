@@ -86,6 +86,6 @@ jobs:
         BUCKET_NAME="weather-data-api"
         ARCHIVE_NAME="repository-temp.tar.gz"
         echo "Uploading $ARCHIVE_NAME to s3://$BUCKET_NAME/"
-        aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME
-        echo "Upload complete."
+        RESPONSE=$(aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME 2>&1)
+        echo "$RESPONSE"
         

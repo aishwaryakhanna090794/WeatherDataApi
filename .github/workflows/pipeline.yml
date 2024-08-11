@@ -68,14 +68,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Create temporary directory
+      run: |
+        mkdir temp-repo
+        cp -r ./* temp-repo/
+
     - name: Archive repository
       run: |
-        # Create a unique filename for the archive to avoid conflicts
         ARCHIVE_NAME="repository-$(date +%Y%m%d%H%M%S).tar.gz"
-        tar -czf $ARCHIVE_NAME .
+        tar -czf $ARCHIVE_NAME -C temp-repo .
 
     - name: Upload repository to S3
       run: |
         BUCKET_NAME="weather-data-api"
         ARCHIVE_NAME="repository-$(date +%Y%m%d%H%M%S).tar.gz"
         aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME
+
+        

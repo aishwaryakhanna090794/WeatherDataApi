@@ -22,12 +22,10 @@ jobs:
       run: |
         BUCKET_NAME="weather-data-api"
         REGION="us-east-1"
-
         aws s3api create-bucket \
           --bucket $BUCKET_NAME \
           --region $REGION 
         aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION || true
-
   check-table:
     runs-on: ubuntu-latest
 
@@ -79,26 +77,26 @@ jobs:
     - name: Create temporary directory
       run: |
         mkdir temp-repo
-
-    - name: Copy files to temporary directory
+    - name: Locate JAR file
       run: |
-        rsync -av --exclude='temp-repo' ./ temp-repo/
-
-    - name: Archive repository
-      run: |
-        ARCHIVE_NAME="repository-temp.tar.gz"
-        tar -czf $ARCHIVE_NAME -C temp-repo .
-        echo "Archive created: $ARCHIVE_NAME"
-        ls -alh $ARCHIVE_NAME  # Verify the archive creation
-
-    - name: Debug AWS S3 CP
+        JAR_FILE=$(find . -name '*.jar')
+        echo "JAR file found: $JAR_FILE"
+        echo "JAR_FILE_PATH=$JAR_FILE" >> $GITHUB_ENV
+    - name: Upload JAR file to S3
       run: |
         BUCKET_NAME="weather-data-api"
-        ARCHIVE_NAME="repository-temp.tar.gz"
-        echo "Current directory contents:"
-        ls -alh
-        echo "Attempting to upload $ARCHIVE_NAME to s3://$BUCKET_NAME/"
-        aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME --region us-east-1 --debug
+        echo "Uploading $JAR_FILE_PATH to s3://$BUCKET_NAME/"
+        aws s3 cp $JAR_FILE_PATH s3://$BUCKET_NAME/ --region us-east-1 --debug
+    # - name: Debug AWS S3 CP
+    #   run: |
+    #     BUCKET_NAME="weather-data-api"
+    #     ARCHIVE_NAME="repository-temp.tar.gz"
+    #     echo "Current directory contents:"
+    #     ls -alh
+    #     echo "Attempting to upload $ARCHIVE_NAME to s3://$BUCKET_NAME/"
+    #     aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME --region us-east-1 --debug
+  
+  
   
   deploy-lambda:
     runs-on: ubuntu-latest
@@ -112,18 +110,31 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Create Lambda function
+    - name: Create or Update Lambda Function
       run: |
-        FUNCTION_NAME="WeatherDataAPI"
+        JAR_FILE="weatherapi-0.0.1-SNAPSHOT.jar"
+        FUNCTION_NAME="WeatherDataAPI2"
         ROLE_ARN="arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambdaaccess"
-        ZIP_FILE="repository-temp.tar.gz"
+        # JAR_FILE="weather-data-api.jar"  # Ensure this matches the JAR file name in S3
         BUCKET_NAME="weather-data-api"
         
-        aws lambda create-function \
-          --function-name $FUNCTION_NAME \
-          --runtime java17 \
-          --role $ROLE_ARN \
-          --handler com.example.MyHandler::handleRequest \
-          --code S3Bucket=$BUCKET_NAME,S3Key=$ZIP_FILE \
-          --timeout 60 \
-          --memory-size 512 || true  # Use || true to prevent failure if function already exists
+        # Check if Lambda function already exists
+        FUNCTION_EXISTS=$(aws lambda get-function --function-name $FUNCTION_NAME 2>/dev/null || echo "not_found")
+        
+        if [ "$FUNCTION_EXISTS" = "not_found" ]; then
+          echo "Creating Lambda function..."
+          aws lambda create-function \
+            --function-name $FUNCTION_NAME \
+            --runtime java17 \
+            --role $ROLE_ARN \
+            --handler com.example.MyHandler::handleRequest \
+            --code S3Bucket=$BUCKET_NAME,S3Key=$JAR_FILE \
+            --timeout 60 \
+            --memory-size 512
+        else
+          echo "Updating Lambda function..."
+          aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --s3-bucket $BUCKET_NAME \
+            --s3-key $JAR_FILE
+        fi

@@ -81,11 +81,13 @@ jobs:
         ARCHIVE_NAME="repository-temp.tar.gz"
         tar -czf $ARCHIVE_NAME -C temp-repo .
 
-    - name: Upload repository to S3
+    - name: Debug and Upload repository to S3
       run: |
         BUCKET_NAME="weather-data-api"
         ARCHIVE_NAME="repository-temp.tar.gz"
         echo "Uploading $ARCHIVE_NAME to s3://$BUCKET_NAME/"
+        echo "Current directory contents:"
+        ls -alh
         RESPONSE=$(aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME 2>&1)
+        echo "AWS S3 CP Response:"
         echo "$RESPONSE"
-        

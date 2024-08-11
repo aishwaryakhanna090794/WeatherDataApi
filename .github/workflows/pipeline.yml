@@ -34,8 +34,9 @@ jobs:
             --attribute-definitions \
               AttributeName=$PRIMARY_KEY,AttributeType=S \
             --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-        # else
-        #   echo "Table already exists."
+        else
+          echo "Table already exists."
+        fi
     
     
     - name: Create S3 bucket

@@ -90,4 +90,4 @@ jobs:
         echo "Current directory contents:"
         ls -alh
         echo "Attempting to upload $ARCHIVE_NAME to s3://$BUCKET_NAME/"
-        aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME --debug
+        aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/$ARCHIVE_NAME --region us-east-1 --debug

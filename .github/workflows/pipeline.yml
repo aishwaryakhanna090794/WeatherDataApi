@@ -5,6 +5,8 @@ on:
     branches:
       - main  # Adjust this to your target branch
 
+
+
 jobs:
   create-s3-bucket:
     runs-on: ubuntu-latest
@@ -79,7 +81,7 @@ jobs:
         mkdir temp-repo
     - name: Locate JAR file
       run: |
-        JAR_FILE=$(find . -name '*.jar')
+        JAR_FILE=$(find . -name '*.zip')
         echo "JAR file found: $JAR_FILE"
         echo "JAR_FILE_PATH=$JAR_FILE" >> $GITHUB_ENV
     - name: Upload JAR file to S3
@@ -112,9 +114,9 @@ jobs:
 
     - name: Create or Update Lambda Function
       run: |
-        JAR_FILE="weatherapi-0.0.1-SNAPSHOT.jar"
-        FUNCTION_NAME="WeatherDataAPI2"
-        ROLE_ARN="arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambdaaccess"
+        JAR_FILE="WeatherDataApi-1.0-SNAPSHOT-lambda-package.zip"
+        FUNCTION_NAME="WeatherDataLambda"
+        ROLE_ARN="arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambda"
         # JAR_FILE="weather-data-api.jar"  # Ensure this matches the JAR file name in S3
         BUCKET_NAME="weather-data-api"
         
@@ -127,7 +129,7 @@ jobs:
             --function-name $FUNCTION_NAME \
             --runtime java17 \
             --role $ROLE_ARN \
-            --handler com.example.MyHandler::handleRequest \
+            --handler org.example.StreamLambdaHandler::handleRequest \
             --code S3Bucket=$BUCKET_NAME,S3Key=$JAR_FILE \
             --timeout 60 \
             --memory-size 512
